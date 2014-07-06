@@ -1,14 +1,12 @@
+///////////////////////////////
+// variables, function
+///////////////////////////////
+
 //modules
 var fs = require('fs');
 var rl = require('readline');
 
-/** ファイル名 */
-var filename = "Test";
-
-/**  */
-var dic = {};
-
-/**  */
+/** プリミティブ型（※まだ足りていない） */
 var PRIMITIVE_TYPE = [
 	"NSString",
 	"NSInteger",
@@ -16,11 +14,12 @@ var PRIMITIVE_TYPE = [
 	"BOOL"
 ];
 
-
-var readData = function(){
-
-};
-
+/**
+ * explanation
+ * 
+ * @param explanation
+ * @return explanation
+ */
 var contain = function(target, list){
 	for(var i = 0; i < list.length; i++){
 		if(target === list[i]){
@@ -30,7 +29,13 @@ var contain = function(target, list){
 	return false
 }
 
-var createHeaderFile = function(dic){
+/**
+ * explanation
+ * 
+ * @param explanation
+ * @return explanation
+ */
+var createHeaderFile = function(filename, dic){
 	var str = "",
 		i = 0,
 		len = dic.length;
@@ -51,9 +56,9 @@ var createHeaderFile = function(dic){
 
 	for(i = 0; i < len; i++){
 		if(contain(dic[i].typename, ["NSInteger", "int", "BOOL"])){
-			str += '@property (nonatomic) ' + dic[i].typename + ' ' + dic[i].variableName + ';\n';
+			str += '@property (nonatomic) ' + dic[i].typename + ' ' + dic[i].variablename + ';\n';
 		}else{
-			str += '@property (nonatomic, strong) ' + dic[i].typename  + '* ' + dic[i].variableName + ';\n';
+			str += '@property (nonatomic, strong) ' + dic[i].typename  + '* ' + dic[i].variablename + ';\n';
 		}
 	}
 
@@ -64,7 +69,13 @@ var createHeaderFile = function(dic){
 	return str;
 };
 
-var createImplementationFile = function(){
+/**
+ * explanation
+ * 
+ * @param explanation
+ * @return explanation
+ */
+var createImplementationFile = function(filename, dic){
 	
 	var str = "",
 		i = 0,
@@ -82,9 +93,9 @@ var createImplementationFile = function(){
 
 	for(i; i < len; i++){
 		if(contain(dic[i].typename, ["NSInteger", "int"])){
-			str += ' self.' + dic[i].variableName + ' = (int)[dic objectForKey:@"' + dic[i].variableName + '"]\n';
+			str += ' self.' + dic[i].variablename + ' = (int)[dic objectForKey:@"' + dic[i].variablename + '"];\n';
 		}else{
-			str += ' self.' + dic[i].variableName + ' = [dic objectForKey:@"' + dic[i].variableName + '"]\n';
+			str += ' self.' + dic[i].variablename + ' = [dic objectForKey:@"' + dic[i].variablename + '"];\n';
 		}
 	}
 
@@ -98,34 +109,55 @@ var createImplementationFile = function(){
 };
 
 
+///////////////////////////////
+// 以下実行処理
+///////////////////////////////
 
-var dic = [
-	{
-		'typename':'int',
-		'variableName':'count'
-	},
-	{
-		'typename':'NSString',
-		'variableName':'nickname'
-	}
-];
+var readline = require('readline');
 
+var rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
+rl.question("input .txt name (without '.txt')", function(input) {
+	rl.close();
 
-var i = rl.createInterface(process.sdtin, process.stdout, null);
-i.question("input ClassName", function(input) {
-	var filename = input;
-	i.close();
-	process.stdin.destroy();
+	fs.readFile('./' + input + '.txt', 'utf8', function (err, text) {
+		if(err){
+			console.log(err);
+			return;
+		}
 
+		var list = text.split('\n');
+		if(!list || list.length === 0){
+			console.log("error1");
+			return;
+		}
 
-	fs.writeFile(filename + '.h', createHeaderFile(dic) , function (err) {
-	 	console.log(err);
+		var dic = [];
+
+		for(var i = 0; i < list.length; i++){
+			var objList = list[i].split(',');
+			if(!objList || objList.length !== 2){
+				break;
+			}
+			dic.push({
+				'typename':objList[0],
+				'variablename':objList[1]
+			});
+		}
+
+		fs.writeFile(input + '.h', createHeaderFile(input, dic) , function (err) {
+		 	if(err) console.log(err);
+		});
+
+		fs.writeFile(input + '.m', createImplementationFile(input, dic) , function (err) {
+			if(err) console.log(err);
+		});
+
 	});
 
-	fs.writeFile(filename + '.m', createImplementationFile(dic) , function (err) {
-		console.log(err);
-	});
 });
 
 return;
