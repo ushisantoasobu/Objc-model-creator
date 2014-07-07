@@ -45,15 +45,51 @@ var deleteSpace = function(txt){
  * @param explanation
  * @return explanation
  */
-var upperFirstChar = function(txt){
-	return txt; //TODO
-};
+ var deleteDuplicateImport = function(text){
+ 	var list = text.split('\n'),
+ 		i = 0, j,
+ 		tempList = [],
+ 		flg = false,
+ 		str = "";
+
+ 	for(i; i < list.length; i++){
+ 		j = 0, flg = false;
+ 		for(j; j < tempList.length; j++){
+ 			if(tempList[j] === list[i]){
+ 				flg = true;
+ 				break;
+ 			}
+ 		}
+ 		if(!flg){
+ 			tempList.push(list[i]);
+ 		}
+ 	}
+
+ 	j = 0;
+ 	for(j; j < tempList.length; j++){
+ 		str += tempList[j] + '\n';
+ 	}
+
+ 	return str;
+ };
 
 /**
  * explanation
  * 
  * @param explanation
  * @return explanation
+ */
+var upperFirstChar = function(txt){
+	return txt; //TODO
+};
+
+/**
+ * ヘッダファイルを生成する
+ * 
+ * @param filename filename
+ * @param dic dic
+ * @param superClass superClass
+ * @return str
  */
 var createHeaderFile = function(filename, dic, superClass){
 	var str = "",
@@ -70,6 +106,10 @@ var createHeaderFile = function(filename, dic, superClass){
 	if(superClass){
 		str += '#import "' + superClass + '.h"\n';
 	}
+
+	console.log(str);
+	str = deleteDuplicateImport(str);
+	console.log(str);
 
 	str += "\n";
 
@@ -91,16 +131,17 @@ var createHeaderFile = function(filename, dic, superClass){
 
 	str += "\n";
 
-	str += "@end";
+	str += "@end\n";
 
 	return str;
 };
 
 /**
- * explanation
+ * 実行ファイルを生成する
  * 
- * @param explanation
- * @return explanation
+ * @param filename filename
+ * @param dic dic
+ * @return str
  */
 var createImplementationFile = function(filename, dic){
 	
