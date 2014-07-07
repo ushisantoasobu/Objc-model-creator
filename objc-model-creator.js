@@ -27,7 +27,7 @@ var contain = function(target, list){
 		}
 	}
 	return false
-}
+};
 
 /**
  * explanation
@@ -35,7 +35,27 @@ var contain = function(target, list){
  * @param explanation
  * @return explanation
  */
-var createHeaderFile = function(filename, dic){
+var deleteSpace = function(txt){
+	return txt.replace(/\s+/g, "");
+};
+
+/**
+ * explanation
+ * 
+ * @param explanation
+ * @return explanation
+ */
+var upperFirstChar = function(txt){
+	return txt; //TODO
+};
+
+/**
+ * explanation
+ * 
+ * @param explanation
+ * @return explanation
+ */
+var createHeaderFile = function(filename, dic, superClass){
 	var str = "",
 		i = 0,
 		len = dic.length;
@@ -47,10 +67,17 @@ var createHeaderFile = function(filename, dic){
 			str += '#import "' + dic[i].typename + '.h"\n';
 		}
 	}
+	if(superClass){
+		str += '#import "' + superClass + '.h"\n';
+	}
 
 	str += "\n";
 
-	str += '@interface ' + filename + ' : NSObject\n';
+	if(!superClass){
+		str += '@interface ' + filename + ' : NSObject\n';
+	}else{
+		str += '@interface ' + filename + ' : ' + superClass + '\n';
+	}
 
 	str += "\n";
 
@@ -136,19 +163,24 @@ rl.question("input .txt name (without '.txt')", function(input) {
 		}
 
 		var dic = [];
+		var superClass;
 
 		for(var i = 0; i < list.length; i++){
 			var objList = list[i].split(',');
 			if(!objList || objList.length !== 2){
 				break;
 			}
-			dic.push({
-				'typename':objList[0],
-				'variablename':objList[1]
-			});
+			if(deleteSpace(objList[0]) === "super"){
+				superClass = deleteSpace(objList[1]);
+			}else{
+				dic.push({
+					'typename':deleteSpace(objList[0]),
+					'variablename':deleteSpace(objList[1])
+				});
+			}
 		}
 
-		fs.writeFile(input + '.h', createHeaderFile(input, dic) , function (err) {
+		fs.writeFile(input + '.h', createHeaderFile(input, dic, superClass) , function (err) {
 		 	if(err) console.log(err);
 		});
 
@@ -161,9 +193,3 @@ rl.question("input .txt name (without '.txt')", function(input) {
 });
 
 return;
-
-
-
-
-
-
