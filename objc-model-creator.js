@@ -107,9 +107,7 @@ var createHeaderFile = function(filename, dic, superClass){
 		str += '#import "' + superClass + '.h"\n';
 	}
 
-	console.log(str);
 	str = deleteDuplicateImport(str);
-	console.log(str);
 
 	str += "\n";
 
@@ -131,6 +129,8 @@ var createHeaderFile = function(filename, dic, superClass){
 
 	str += "\n";
 
+	str += "- (id)initWithDic:(NSDictionary *)dic;\n";
+
 	str += "@end\n";
 
 	return str;
@@ -143,7 +143,7 @@ var createHeaderFile = function(filename, dic, superClass){
  * @param dic dic
  * @return str
  */
-var createImplementationFile = function(filename, dic){
+var createImplementationFile = function(filename, dic, superClass){
 	
 	var str = "",
 		i = 0,
@@ -157,16 +157,20 @@ var createImplementationFile = function(filename, dic){
 
 	str += "\n";
 
-	str += "- (void)initWithDis:(NSDictionary *)dic {\n";
+	str += "- (id)initWithDic:(NSDictionary *)dic {\n";
+	if(superClass){
+		str += " self = [super initWithDic:dic];\n";
+	}
 
 	for(i; i < len; i++){
 		if(contain(dic[i].typename, ["NSInteger", "int"])){
-			str += ' self.' + dic[i].variablename + ' = (int)[dic objectForKey:@"' + dic[i].variablename + '"];\n';
+			str += ' self.' + dic[i].variablename + ' = [[dic objectForKey:@"' + dic[i].variablename + '"] intValue];\n'; //TODO:int限定？
 		}else{
 			str += ' self.' + dic[i].variablename + ' = [dic objectForKey:@"' + dic[i].variablename + '"];\n';
 		}
 	}
 
+	str += " return self;\n";
 	str += "}\n";
 
 	str += "\n";
@@ -225,7 +229,7 @@ rl.question("input .txt name (without '.txt')", function(input) {
 		 	if(err) console.log(err);
 		});
 
-		fs.writeFile(input + '.m', createImplementationFile(input, dic) , function (err) {
+		fs.writeFile(input + '.m', createImplementationFile(input, dic, superClass) , function (err) {
 			if(err) console.log(err);
 		});
 
