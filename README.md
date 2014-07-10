@@ -1,11 +1,11 @@
-Objc-model-creator
-==================
+# objc-model-creator
 
-create data-model in objective-C with Node.js
+create "dataModel" file(.h, .m) in objective-C with Node.js
 
-##How to use
 
- * Prepare hoge.txt like below, which contains (if needed) ['super', SuperClassName] and list of [Type, variableName].
+##Usage
+
+Prepare hoge.txt like below, which contains (if needed) ['super', SuperClassName] and list of [Type, variableName].
 ```javascript
 super, Human
 NSInteger,age
@@ -14,40 +14,46 @@ Skill,skill
 Skill,specialSkill
 ```
 
- * Execute objc-model-creator.js with Node.
+
+Execute objc-model-creator.js with Node.
 
 ```javascript
 node objc-model-creator.js
 ```
 
- * 2 files like below, header file(.h) and implementation file(.m) , will be generated.
+
+2 files like below, header file(.h) and implementation file(.m) , will be generated.
 
 ```Objective-C
 #import <Foundation/Foundation.h>
-#import "Shop.h"
-#import "LargeArea.h"
+#import "Skill.h"
+#import "Human.h"
 
 
-@interface Test : LargeArea
+@interface test : Human
 
-@property (nonatomic) NSInteger count;
+@property (nonatomic) NSInteger age;
 @property (nonatomic, strong) NSString* nickname;
-@property (nonatomic, strong) Shop* shop;
-@property (nonatomic, strong) Shop* testShop;
+@property (nonatomic, strong) Skill* skill;
+@property (nonatomic, strong) Skill* specialSkill;
 
+- (id)initWithDic:(NSDictionary *)dic;
 @end
 ```
 
+
 ```Objective-C
-#import "Test.h"
+#import "test.h"
 
-@implementation Test
+@implementation test
 
-- (void)initWithDis:(NSDictionary *)dic {
- self.count = (int)[dic objectForKey:@"count"];
+- (id)initWithDic:(NSDictionary *)dic {
+ self = [super initWithDic:dic];
+ self.age = [[dic objectForKey:@"age"] intValue];
  self.nickname = [dic objectForKey:@"nickname"];
- self.shop = [dic objectForKey:@"shop"];
- self.testShop = [dic objectForKey:@"testShop"];
+ self.skill = [dic objectForKey:@"skill"];
+ self.specialSkill = [dic objectForKey:@"specialSkill"];
+ return self;
 }
 
 @end
