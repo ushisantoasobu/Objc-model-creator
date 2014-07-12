@@ -165,8 +165,11 @@ var createImplementationFile = function(filename, dic, superClass){
 	for(i; i < len; i++){
 		if(contain(dic[i].typename, ["NSInteger", "int"])){
 			str += ' self.' + dic[i].variablename + ' = [[dic objectForKey:@"' + dic[i].variablename + '"] intValue];\n'; //TODO:int限定？
-		}else{
+		}else if(contain(dic[i].typename, ["NSString"])){
 			str += ' self.' + dic[i].variablename + ' = [dic objectForKey:@"' + dic[i].variablename + '"];\n';
+		}else{
+			//プリミティブな型でないときは再帰的にinitWithDicで処理をする
+			str += ' self.' + dic[i].variablename + ' = ' + '[[' + dic[i].typename + ' alloc] initWithDic:[dic objectForKey:@"' + dic[i].variablename + '"]];\n';
 		}
 	}
 
@@ -185,56 +188,45 @@ var createImplementationFile = function(filename, dic, superClass){
 // 以下実行処理
 ///////////////////////////////
 
-var readline = require('readline');
+var f = process.argv[2];
+var input = f.substr(0, f.length - 4);
 
-var rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
+fs.readFile('./' + f, 'utf8', function (err, text) {
+	if(err){
+		console.log(err);
+		return;
+	}
 
-rl.question("input .txt name (without '.txt')", function(input) {
-	rl.close();
+	var list = text.split('\n');
+	if(!list || list.length === 0){
+		console.log("error1");
+		return;
+	}
 
-	fs.readFile('./' + input + '.txt', 'utf8', function (err, text) {
-		if(err){
-			console.log(err);
-			return;
+	var dic = [];
+	var superClass;
+
+	for(var i = 0; i < list.length; i++){
+		var objList = list[i].split(',');
+		if(!objList || objList.length !== 2){
+			break;
 		}
-
-		var list = text.split('\n');
-		if(!list || list.length === 0){
-			console.log("error1");
-			return;
+		if(deleteSpace(objList[0]) === "super"){
+			superClass = deleteSpace(objList[1]);
+		}else{
+			dic.push({
+				'typename':deleteSpace(objList[0]),
+				'variablename':deleteSpace(objList[1])
+			});
 		}
+	}
 
-		var dic = [];
-		var superClass;
+	fs.writeFile(input + '.h', createHeaderFile(input, dic, superClass) , function (err) {
+	 	if(err) console.log(err);
+	});
 
-		for(var i = 0; i < list.length; i++){
-			var objList = list[i].split(',');
-			if(!objList || objList.length !== 2){
-				break;
-			}
-			if(deleteSpace(objList[0]) === "super"){
-				superClass = deleteSpace(objList[1]);
-			}else{
-				dic.push({
-					'typename':deleteSpace(objList[0]),
-					'variablename':deleteSpace(objList[1])
-				});
-			}
-		}
-
-		fs.writeFile(input + '.h', createHeaderFile(input, dic, superClass) , function (err) {
-		 	if(err) console.log(err);
-		});
-
-		fs.writeFile(input + '.m', createImplementationFile(input, dic, superClass) , function (err) {
-			if(err) console.log(err);
-		});
-
+	fs.writeFile(input + '.m', createImplementationFile(input, dic, superClass) , function (err) {
+		if(err) console.log(err);
 	});
 
 });
-
-return;
